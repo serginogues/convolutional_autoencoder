@@ -32,8 +32,15 @@ Tasks:
         merged with the luminance captured in grayscale to reconstruct the full image.
 
 """
-from dataset import *
+from config import *
+from dataset import load_CIFAR10
 
 
 if __name__ == '__main__':
-    pass
+    train_loader, test_loader, valid_loader = load_CIFAR10()
+
+    for epoch in range(EPOCHS):
+        for imgs, labels in train_loader:
+            batch_size = imgs.shape[0]
+            print(batch_size)
+            break
