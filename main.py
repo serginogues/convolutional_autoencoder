@@ -32,7 +32,10 @@ Tasks:
         merged with the luminance captured in grayscale to reconstruct the full image.
 
 """
-
+from config import TRAIN
+from autoencoder import train, test, get_model, model
 
 if __name__ == '__main__':
-    pass
+    if TRAIN:
+        train()
+    test(get_model())

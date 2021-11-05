@@ -1,15 +1,15 @@
 """
 Dataset class to work with CIFAR-10
 
-PIL Images dim: H x W x C where value range=[0, 255]
-post-transform sample dim: C × H × W (channel, height, width) where range=[0, 1]
-You can
+torchvision.transforms.ToTensor:
+Converts a PIL Image or numpy.ndarray (H x W x C) in the range [0, 255]
+to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
 """
 
 import torch
 from torchvision import datasets
 from torch.utils.data.dataset import random_split
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, ConcatDataset
 from torchvision import transforms
 import matplotlib.pyplot as plt
 import numpy as np
@@ -38,7 +38,7 @@ def load_CIFAR10(standarize=False):
         test_dataset = datasets.CIFAR10(root=DATA_PATH, train=False, download=True, transform=test_transform)
 
     print("...concatenating and splitting")
-    concat_dataset = torch.utils.data.ConcatDataset([train_dataset, test_dataset])
+    concat_dataset = ConcatDataset([train_dataset, test_dataset])
     len_ = len(concat_dataset)
     train_set, test_set, valid_set = random_split(concat_dataset, [round(len_ * TRAIN_SIZE), round(len_ * TEST_SIZE), round(len_ * VALIDATION_SIZE)])
 
@@ -109,7 +109,6 @@ def plot_img_dataloader(dataloader):
     images = images / 2 + 0.5
     plt.imshow(np.transpose(images[0], (1, 2, 0)))
     plt.show()
-
 
 
 def plot_img_dataset(dataset, idx=120):
