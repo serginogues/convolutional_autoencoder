@@ -12,7 +12,7 @@ from utils import get_transform
 from config import *
 
 
-def load_CIFAR10():
+def load_CIFAR10(mean_std=True, print_mean_std=False):
     """
     Load (or download) train and test CIFAR10 dataset and split train into 10% validation, 90% train
 
@@ -29,38 +29,42 @@ def load_CIFAR10():
     """
 
     print("...loading train and test datasets")
+    # transforms.ToTensor() already scales from PIL Images with range [0, 255] to Tensors with range [0, 1]
     train_dataset = datasets.CIFAR10(root=DATA_PATH, train=True, download=True, transform=transforms.ToTensor())
     test_dataset = datasets.CIFAR10(root=DATA_PATH, train=False, download=True, transform=transforms.ToTensor())
 
-    train_transform = get_transform(train_dataset)
-    test_transform = get_transform(test_dataset)
+    if mean_std:
+        print("...computing mean and std for standarization")
+        train_transform = get_transform(train_dataset)
+        test_transform = get_transform(test_dataset)
 
-    train_dataset = datasets.CIFAR10(root=DATA_PATH, train=True, download=True, transform=train_transform)
-    test_dataset = datasets.CIFAR10(root=DATA_PATH, train=False, download=True, transform=test_transform)
+        print("...re-loading train and test normalised datasets")
+        train_dataset = datasets.CIFAR10(root=DATA_PATH, train=True, download=True, transform=train_transform)
+        test_dataset = datasets.CIFAR10(root=DATA_PATH, train=False, download=True, transform=test_transform)
 
-    print("...concatenating test and train. Splitting into 80, 10, 10")
+    print("...concatenating and splitting")
     concat_dataset = torch.utils.data.ConcatDataset([train_dataset, test_dataset])
     len_ = len(concat_dataset)
     train_set, test_set, valid_set = random_split(concat_dataset, [round(len_ * TRAIN_SIZE), round(len_ * TEST_SIZE), round(len_ * VALIDATION_SIZE)])
 
+    print("")
     print("Train samples:", len(train_set))
     print("Test samples:", len(test_set))
     print("Validation samples:", len(valid_set))
     total_samp = len(train_set) + len(test_set) + len(valid_set)
     print("Sample distribution: " + str(round((len(train_set) / total_samp) * 100))
           + "% train, " + str(round((len(test_set) / total_samp) * 100)) + "% test, "
-          + str(round((len(valid_set) / total_samp) * 100)) + "% validation, ")
+          + str(round((len(valid_set) / total_samp) * 100)) + "% validation")
 
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, num_workers=1, shuffle=True, drop_last=True)
     test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, num_workers=1, shuffle=False)
     valid_loader = DataLoader(valid_set, batch_size=BATCH_SIZE, num_workers=1, shuffle=False)
 
-    # print mean and std
-    """print(next(iter(train_loader))[0].mean())
-    print(next(iter(train_loader))[0].std())
-    print(next(iter(test_loader))[0].mean())
-    print(next(iter(test_loader))[0].std())
-    print(next(iter(valid_loader))[0].mean())
-    print(next(iter(valid_loader))[0].std())"""
+    if print_mean_std:
+        # print mean and std
+        m = (next(iter(train_loader))[0].mean() + next(iter(test_loader))[0].mean() + next(iter(valid_loader))[0].mean())/3
+        s = (next(iter(train_loader))[0].std() + next(iter(test_loader))[0].std() + next(iter(valid_loader))[0].std())/3
+        print("Mean = ", m)
+        print("Std = ", s)
 
     return train_loader, test_loader, valid_loader

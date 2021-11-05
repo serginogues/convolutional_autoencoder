@@ -43,4 +43,3 @@ if __name__ == '__main__':
         for imgs, labels in train_loader:
             batch_size = imgs.shape[0]
             print(batch_size)
-            break

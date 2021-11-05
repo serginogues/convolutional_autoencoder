@@ -26,8 +26,6 @@ def get_transform(dataset):
         transforms.Normalize((mean[0].item(), mean[1].item(), mean[2].item()),
                              (std[0].item(), std[1].item(), std[2].item()))
     ])
-    print(mean)
-    print(std)
     return transform
 
 
